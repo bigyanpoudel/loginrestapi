@@ -12,4 +12,4 @@ mongoose.connect('mongodb://localhost:27017/test',{useNewUrlParser : true},(err)
     }
 });
 mongoose.Promise = global.Promise;
-require('../model/index');
+require('./user');

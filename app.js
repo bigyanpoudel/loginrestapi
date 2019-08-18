@@ -1,28 +1,46 @@
-require('./api/model/db');
-var express = require('express');
-var app = express();
-var path = require('path');
-var ejs =require('ejs');
-var expressLayout = require('express-ejs-layouts');
-const bodyparser = require('body-parser');
-
-
-
-
-
-
+require('./model/database');
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
+const ejs = require('ejs');
+const flash = require('connect-flash');
+const session = require('express-session');
+const passport =require('passport');
+//bodyparser
+app.use(bodyParser.urlencoded({extended : false}));
+app.use(bodyParser.json());
 //ejs
-
 app.set('view engine','ejs');
 
-//static file
-app.use('/cssfile',express.static(__dirname + '/css'));
+//passport config
+require('./config/passport')(passport);
 
-//bodyparser
-app.use(bodyparser.urlencoded({ extended: false}));
-app.use(bodyparser.json());
+//sesssion middleware
+app.use(session({
+    secret: 'secrets',
+    resave: true,
+    saveUninitialized: true,
+    
+  }));
 
-//handlling cores error
+//passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+  //flash-connect middleware
+  app.use(flash());
+ 
+
+  //global varables
+  app.use((req,res,next)=>{
+      res.locals.successmsg = req.flash('successmsg');
+      res.locals.errormsg = req.flash('errormsg');
+      res.locals.error = req.flash('error');
+      next();
+  });
+
+//handling error
 app.use((req, res, next) => {
     res.header("Access-Comtrol-Allow-Orign","*");
     res.header("Access-Controll-Allow-Header","*");
@@ -35,14 +53,21 @@ app.use((req, res, next) => {
     next();
 });
 
+//route handalling
+app.use('/dashboard',require('./routes/index'));
+app.use('/users',require('./routes/Users'));
 
 
 
-app.use('/users',require('./router/user'));
 
 
 
 
-app.listen(3000,() => {
+
+
+
+
+
+app.listen(3000, () => {
     console.log('App listening on port 3000!');
 });
